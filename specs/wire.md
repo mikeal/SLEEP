@@ -23,7 +23,8 @@ A *server* can expose this wire protocol at any number of *endpoints*. The scope
 * since - seq id to start at, returns everything after that, defaults to the start
 * limit - maximum number of changes to return, defaults to unlimited XXX can a server optionally limit this to a maximum?
 * include\_data - if present and false, the wire protocol's data field isn't included
-
+* style - optional. the feed encoding style, either newline or array. defaults to array.
+* seq - optional. the separator to use if style=newline, defaults to `\r\n`
 
 ## Response
 

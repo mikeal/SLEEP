@@ -27,6 +27,7 @@ function SLEEPStream (opts) {
   this.readable = true
 
   opts.limit = opts.limit || Infinity
+  opts.style = opts.style || 'array'
   this.opts = opts
   this.i = 0
 }
@@ -36,7 +37,7 @@ SLEEPStream.prototype.change = function (change) {
 
   if (this.opts.style === 'newline') {
     this.emit('data', JSON.stringify(change) + this.opts.sep || '\r\n')
-  } else if (!this.opts.style) {
+  } else if (this.opts.style === 'array') {
 
     if (this.i === 0) this.emit('data', '[')
     else this.emit('data', ',')
@@ -52,7 +53,7 @@ SLEEPStream.prototype.end = function () {
   if (this.ended) return
   if (this.opts.style === 'newline') {
     this.emit('data', this.opts.sep || '\r\n' + this.opts.sep || '\r\n')
-  } else if (!this.opts.style) {
+  } else if (this.opts.style === 'array') {
     this.emit('data', ']')
   } else {
     this.emit('error', new Error('unknown feed style.'))
