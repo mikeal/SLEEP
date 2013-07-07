@@ -1,4 +1,4 @@
-var sleep = require('./sleep')
+var sleep = require('./server')
   , memstore = require('./memstore')
   ;
 
