@@ -1,7 +1,7 @@
 {
-  "name": "SLEEP",
+  "name": "sleep-ref",
   "version": "0.1.0",
-  "description": "Implementation of the SLEEP protocol.",
+  "description": "Reference implementation of the SLEEP protocol.",
   "main": "index.js",
   "directories": {
     "test": "tests"

@@ -1,13 +1,13 @@
 ## SLEEP
 
-`npm install SLEEP`
+`npm install sleep-ref`
 
 SLEEP is a protocol envisioned by @maxogden for open data publication and synchronization.
 
 This project is meant to iterate on the spec through implementation and also to produce a module that is easily usable by other databases to expose their data with SLEEP.
 
 ```javascript
-var sleep = require('SLEEP')
+var sleep = require('sleep-ref')
   , http = require('http')
   ;
 
