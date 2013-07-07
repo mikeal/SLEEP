@@ -11,3 +11,5 @@ module.exports.SLEEP = sleep.SLEEP
 module.exports.SLEEPStream = sleep.SLEEPStream
 module.exports.fromObject = sleep.fromObject
 module.exports.fromArray = sleep.fromArray
+
+module.exports.client = require('./client')

@@ -7,11 +7,11 @@
     "test": "tests"
   },
   "dependencies": {
+    "JSONStream": "~0.6.4",
     "once": "~1.1.1",
     "lodash": "~1.3.1"
   },
   "devDependencies": {
-    "JSONStream": "~0.6.4",
     "cleanup": "~0.3.0",
     "okdone": "~0.3.0"
   },

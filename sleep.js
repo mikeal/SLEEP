@@ -23,38 +23,38 @@ function fromArray (arr, start) {
 }
 
 function SLEEPStream (opts) {
-  stream.Stream.call(this)
-  this.readable = true
+  stream.Readable.call(this)
 
   opts.limit = opts.limit || Infinity
   opts.style = opts.style || 'array'
   this.opts = opts
   this.i = 0
 }
-util.inherits(SLEEPStream, stream.Stream)
+util.inherits(SLEEPStream, stream.Readable)
 SLEEPStream.prototype.change = function (change) {
   if (this.i > this.opts.limit) return this.end()
 
   if (this.opts.style === 'newline') {
-    this.emit('data', JSON.stringify(change) + this.opts.sep || '\r\n')
+    this.push(JSON.stringify(change) + this.opts.sep || '\r\n')
   } else if (this.opts.style === 'array') {
 
-    if (this.i === 0) this.emit('data', '[')
-    else this.emit('data', ',')
+    if (this.i === 0) this.push('[')
+    else this.push(',')
 
-    this.emit('data', JSON.stringify(change))
+    this.push(JSON.stringify(change))
   } else {
     this.emit('error', new Error('unknown feed style.'))
   }
 
   this.i += 1
 }
+SLEEPStream.prototype._read = function () {}
 SLEEPStream.prototype.end = function () {
   if (this.ended) return
   if (this.opts.style === 'newline') {
-    this.emit('data', this.opts.sep || '\r\n' + this.opts.sep || '\r\n')
+    this.push(this.opts.sep || '\r\n' + this.opts.sep || '\r\n')
   } else if (this.opts.style === 'array') {
-    this.emit('data', ']')
+    this.push(']')
   } else {
     this.emit('error', new Error('unknown feed style.'))
   }
@@ -120,8 +120,11 @@ SLEEP.prototype.handler = function (opts, stream) {
   sleepstream.pipe(stream)
   var ret = self.getSequences(opts, function (e, changes) {
     if (ret) return
-    changes.forEach(function (c) { sleepstream.change(c) })
-    sleepstream.end()
+    // defer in can this is called synchronously
+    setImmediate(function () {
+      changes.forEach(function (c) { sleepstream.change(c) })
+      sleepstream.end()
+    })
   })
   if (ret && ret.on) {
     ret.on('seq', sleepstream.change.bind(sleepstream))
