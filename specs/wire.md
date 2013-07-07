@@ -48,7 +48,7 @@ Every *entry* MUST include an **id** property.
 
 Every **id** MUST be a unique identifier per *endpoint* for the underlying **data**.
 
-An **id** MAY occur more than once during transmission. Clients MUST assume that the higher **seq** that is returned for an **id** replaces the previous *entry*.
+An **id** MAY occur more than once during transmission. Clients MUST assume that the higher **seq** that is returned for an **id** replaces the data for the previous *entry*. If the id occurs multiple times then the entries with lower **seq** integers are effectively past representations of that data and can be ignored or overwritten.
 
 The value of **id** MUST be a JSON string type.
 
