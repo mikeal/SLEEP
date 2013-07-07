@@ -2,19 +2,12 @@
 
 #### Language
 
-Each log will be referred to as an *entry*.
+SLEEP defines a sequence of *entries* that expose a data store, index, or other *endpoint* as a feed of data.
 
 The actor exposing the interface to be read by this wire protocol will be referred to as *server*. The actor reading the wire protocol will be referred to as the *client*.
 
 A *server* can expose this wire protocol at any number of *endpoints*. The scope of those endpoints is not defined by this spec but examples are: a database, an index.
 
-```JSON
-{ "seq": 10,
-  "id": "07acde3002cb1f62a08de5469160b912",
-  "deleted": false,
-  "data": { "first_name": "Ryan", "last_name": "Pitts", "employer": "The Spokesman-Review" }
-}
-```
 
 ## Request
 
@@ -28,9 +21,25 @@ A *server* can expose this wire protocol at any number of *endpoints*. The scope
 
 ## Response
 
-### Feed Types
+### Feed Styles
+
+Entries are encoded in different feed styles.
+
+The default feed style is `array` and simply puts each feed entry in to an array.
+
+Another optional feed style is `newline` which allows a custom separator between *entries*, using the `sep` option, but defaults to `\r\n`.
 
 ### Entries
+
+Example:
+
+```JSON
+{ "seq": 10,
+  "id": "07acde3002cb1f62a08de5469160b912",
+  "deleted": false,
+  "data": { "first_name": "Ryan", "last_name": "Pitts", "employer": "The Spokesman-Review" }
+}
+```
 
 #### seq
 
@@ -50,7 +59,7 @@ Every **id** MUST be a unique identifier per *endpoint* for the underlying **dat
 
 An **id** MAY occur more than once during transmission. Clients MUST assume that the higher **seq** that is returned for an **id** replaces the data for the previous *entry*. If the id occurs multiple times then the entries with lower **seq** integers are effectively past representations of that data and can be ignored or overwritten.
 
-The value of **id** MUST be a JSON string type.
+The value of **id** MUST be a JSON string type or array type.
 
 #### deleted
 
