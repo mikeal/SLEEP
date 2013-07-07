@@ -127,7 +127,7 @@ SLEEP.prototype.handler = function (opts, stream) {
     })
   })
   if (ret && ret.on) {
-    ret.on('seq', sleepstream.change.bind(sleepstream))
+    ret.on('entry', sleepstream.change.bind(sleepstream))
     ret.on('error', stream.close.bind(stream))
     ret.on('end', sleepstream.end.bind(sleepstream))
   }

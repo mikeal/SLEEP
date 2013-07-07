@@ -36,7 +36,7 @@ net.createServer(function (socket) {
 var sleep = require('sleep-ref')
   , changes = sleep.client('http://localhost:8888/', {include_data})
   ;
-changes.on('seq', function (entry) { console.log(entry) })
+changes.on('entry', function (entry) { console.log(entry) })
 changes.on('end', function () { console.log('up to date') })
 ```
 

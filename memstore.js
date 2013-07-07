@@ -51,11 +51,11 @@ MemoryStore.prototype.getContinuousSequences = function (opts) {
   }
 
   setImmediate(function () {
-    self.changes(opts).forEach(function (c) { if (emitted < opts.limit) ee.emit('seq', c)})
+    self.changes(opts).forEach(function (c) { if (emitted < opts.limit) ee.emit('entry', c)})
     self.on('change', onChange)
   })
 
-  ee.on('seq', function () {emitted += 1})
+  ee.on('entry', function () {emitted += 1})
 
   ee.close = function ( ) { self.removeListener('change', onChange) }
   return ee
