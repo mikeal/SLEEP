@@ -49,7 +49,7 @@ Each *entry* MUST be returned in the order defined by its **seq**.
 
 The *entries* MAY be "sparse" and clients MUST NOT assume every sequential integer will be returned or that *entries* will begin at any particular integer.
 
-The value of **seq** MUST be a JSON integer type.
+The value of **seq** MUST be a JSON `number` type greater than 0.
 
 #### id
 
