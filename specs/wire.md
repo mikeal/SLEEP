@@ -23,7 +23,7 @@ A *server* can expose this wire protocol at any number of *endpoints*. The scope
 * since - seq id to start at, returns everything after that, defaults to the start
 * limit - maximum number of changes to return, defaults to unlimited XXX can a server optionally limit this to a maximum?
 * include\_data - if present and false, the wire protocol's data field isn't included
-* style - optional. the feed encoding style, either newline or array. defaults to array.
+* style - optional. the feed encoding style, either `newline` or `array`. defaults to `array`.
 * seq - optional. the separator to use if style=newline, defaults to `\r\n`
 
 ## Response
@@ -46,9 +46,9 @@ The value of **seq** MUST be a JSON integer type.
 
 Every *entry* MUST include an **id** property.
 
-Every **id** MUST be a unique identifier per *endpoint*.
+Every **id** MUST be a unique identifier per *endpoint* for the underlying **data**.
 
-An **id** MAY occure more than once during transmission. Clients MUST assume that the higher **seq** that is returned for an **id** replaces the previous *entry*.
+An **id** MAY occur more than once during transmission. Clients MUST assume that the higher **seq** that is returned for an **id** replaces the previous *entry*.
 
 The value of **id** MUST be a JSON string type.
 
