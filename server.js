@@ -120,7 +120,7 @@ SLEEP.prototype.handler = function (opts, stream) {
   sleepstream.pipe(stream)
   var ret = self.getSequences(opts, function (e, changes) {
     if (ret) return
-    // defer in can this is called synchronously
+    // defer in case this is called synchronously
     setImmediate(function () {
       changes.forEach(function (c) { sleepstream.change(c) })
       sleepstream.end()
@@ -128,7 +128,7 @@ SLEEP.prototype.handler = function (opts, stream) {
   })
   if (ret && ret.on) {
     ret.on('entry', sleepstream.change.bind(sleepstream))
-    ret.on('error', stream.close.bind(stream))
+    ret.on('error', stream.close ? stream.close.bind(stream) : stream.end.bind(stream))
     ret.on('end', sleepstream.end.bind(sleepstream))
   }
 }
