@@ -3,6 +3,7 @@ var qs = require('querystring')
   , once = require('once')
   , util = require('util')
   , stream = require('stream')
+  , _ = require('lodash')
   ;
 
 function fromObject (obj, start) {
@@ -32,6 +33,7 @@ function SLEEPStream (opts) {
 }
 util.inherits(SLEEPStream, stream.Readable)
 SLEEPStream.prototype.change = function (change) {
+  this.started = true
   if (this.i > this.opts.limit) return this.end()
 
   if (this.opts.style === 'newline') {
@@ -41,6 +43,12 @@ SLEEPStream.prototype.change = function (change) {
     if (this.i === 0) this.push('[')
     else this.push(',')
 
+    this.push(JSON.stringify(change))
+  } else if (this.opts.style === 'array') {
+
+    if (this.i === 0) this.push('{"rows":[')
+    else this.push(',')
+    
     this.push(JSON.stringify(change))
   } else {
     this.emit('error', new Error('unknown feed style.'))
@@ -52,9 +60,13 @@ SLEEPStream.prototype._read = function () {}
 SLEEPStream.prototype.end = function () {
   if (this.ended) return
   if (this.opts.style === 'newline') {
-    this.push(this.opts.sep || '\r\n' + this.opts.sep || '\r\n')
+    if (this.started) this.push(this.opts.sep || '\r\n' + this.opts.sep || '\r\n')
   } else if (this.opts.style === 'array') {
-    this.push(']')
+    if (this.started) this.push(']')
+    else this.push('[]')
+  } else if (this.opts.style === 'object') {
+    if (this.started) this.push(']}')
+    else this.push('{"rows":[]}')
   } else {
     this.emit('error', new Error('unknown feed style.'))
   }
@@ -86,8 +98,9 @@ function readData (stream, cb) {
   }
 }
 
-function SLEEP (getSequences) {
+function SLEEP (getSequences, options) {
   this.getSequences = getSequences
+  this.options = options || {}
 }
 SLEEP.prototype.httpHandler = function (req, resp) {
   var self = this
@@ -116,7 +129,7 @@ SLEEP.prototype.netHandler = function (socket) {
 }
 SLEEP.prototype.handler = function (opts, stream) {
   var self = this
-  var sleepstream = new SLEEPStream(opts)
+  var sleepstream = new SLEEPStream(_.extend({}, this.options, opts))
   sleepstream.pipe(stream)
   var ret = self.getSequences(opts, function (e, changes) {
     if (ret) return
