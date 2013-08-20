@@ -37,14 +37,14 @@ SLEEPStream.prototype.change = function (change) {
   if (this.i > this.opts.limit) return this.end()
 
   if (this.opts.style === 'newline') {
-    this.push(JSON.stringify(change) + this.opts.sep || '\r\n')
+    this.push(JSON.stringify(change) + (this.opts.sep || '\r\n'))
   } else if (this.opts.style === 'array') {
 
     if (this.i === 0) this.push('[')
     else this.push(',')
 
     this.push(JSON.stringify(change))
-  } else if (this.opts.style === 'array') {
+  } else if (this.opts.style === 'object') {
 
     if (this.i === 0) this.push('{"rows":[')
     else this.push(',')
@@ -60,7 +60,8 @@ SLEEPStream.prototype._read = function () {}
 SLEEPStream.prototype.end = function () {
   if (this.ended) return
   if (this.opts.style === 'newline') {
-    if (this.started) this.push(this.opts.sep || '\r\n' + this.opts.sep || '\r\n')
+    var sep = this.opts.sep 
+    if (this.started) this.push(sep || '\r\n' + (sep ? sep : ''))
   } else if (this.opts.style === 'array') {
     if (this.started) this.push(']')
     else this.push('[]')
