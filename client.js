@@ -18,6 +18,8 @@ function Client (opts) {
     parser = jsonstream.parse()
   } else if (opts.style === 'array') {
     parser = jsonstream.parse([true])
+  } else if (opts.style === 'object') {
+    parser = jsonstream.parse(['rows', /./])
   } else {
     throw new Error('Unknown feed style.')
   }
@@ -40,8 +42,11 @@ function httpConnect (opts, u) {
     , c = new Client(opts)
     ;
   r.on('response', function (resp) {
-    if (!resp.statusCode === 200) return c.error(new Error('StatusCode is not 200'))
+    if (!resp.statusCode === 200) return c.emit('error', new Error('StatusCode is not 200'))
     resp.pipe(c)
+  })
+  r.on('error', function(e) {
+    return c.emit('error', e)
   })
   r.end()
   return c
@@ -53,7 +58,7 @@ function httpsConnect (opts, u) {
     , c = new Client(opts)
     ;
   r.on('response', function (resp) {
-    if (!resp.statusCode === 200) return c.error(new Error('StatusCode is not 200'))
+    if (!resp.statusCode === 200) return c.emit('error', new Error('StatusCode is not 200'))
     resp.pipe(c)
   })
   r.end()

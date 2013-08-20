@@ -2,7 +2,7 @@ var sleep = require('./server')
   , memstore = require('./memstore')
   ;
 
-module.exports = function (getSequence) { return new sleep.SLEEP(getSequence) }
+module.exports = function (getSequence, options) { return new sleep.SLEEP(getSequence, options) }
 module.exports.memstore = function () {return new memstore.MemoryStore}
 
 module.exports.MemoryStore = memstore.MemoryStore
