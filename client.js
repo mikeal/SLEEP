@@ -23,8 +23,8 @@ function Client (opts) {
   } else {
     throw new Error('Unknown feed style.')
   }
-  this.pipe(parser)
   parser.on('data', this.emit.bind(this, 'entry'))
+  this.pipe(parser)
 }
 util.inherits(Client, stream.PassThrough)
 
