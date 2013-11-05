@@ -2,6 +2,7 @@ var qs = require('querystring')
   , url = require('url')
   , once = require('once')
   , util = require('util')
+  , concat = require('concat-stream')
   , stream = require('stream')
   , _ = require('lodash')
   ;
@@ -132,19 +133,10 @@ SLEEP.prototype.handler = function (opts, stream) {
   var self = this
   var sleepstream = new SLEEPStream(_.extend({}, this.options, opts))
   sleepstream.pipe(stream)
-  var ret = self.getSequences(opts, function (e, changes) {
-    if (ret) return
-    // defer in case this is called synchronously
-    setImmediate(function () {
-      changes.forEach(function (c) { sleepstream.change(c) })
-      sleepstream.end()
-    })
-  })
-  if (ret && ret.on) {
-    ret.on('entry', sleepstream.change.bind(sleepstream))
-    ret.on('error', stream.close ? stream.close.bind(stream) : stream.end.bind(stream))
-    ret.on('end', sleepstream.end.bind(sleepstream))
-  }
+  var seqStream = self.getSequences(opts)
+  seqStream.on('data', sleepstream.change.bind(sleepstream))
+  seqStream.on('error', stream.close ? stream.close.bind(stream) : stream.end.bind(stream))
+  seqStream.on('end', sleepstream.end.bind(sleepstream))
 }
 
 exports.SLEEP = SLEEP
