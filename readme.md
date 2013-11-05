@@ -11,6 +11,7 @@ This project is meant to iterate on the spec through implementation and also to 
 ```javascript
 var sleep = require('sleep-ref')
   , http = require('http')
+  , net = require('net')
   ;
 
 function getSequences (opts, cb) {
