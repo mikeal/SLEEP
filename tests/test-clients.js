@@ -42,7 +42,7 @@ function check (name) {
 
 function test (name, client) {
   var changes = []
-  client.on('entry', changes.push.bind(changes))
+  client.on('data', changes.push.bind(changes))
   client.on('end', function () {
     assert.equal(changes.length, 2)
     assert.deepEqual(changes, [ { seq: 2, id: 'test2' }, { seq: 3, id: 'test1' } ])

@@ -7,6 +7,8 @@ var net = require('net')
   , stream = require('stream')
   , qs = require('querystring')
   , _ = require('lodash')
+  , combiner = require('stream-combiner')
+  , through = require('through')
   , headers = {'content-type':'application/json'}
   ;
 
@@ -23,8 +25,10 @@ function Client (opts) {
   } else {
     throw new Error('Unknown feed style.')
   }
-  parser.on('data', this.emit.bind(this, 'entry'))
+  var emitter = through(function noop(d){ })
+  parser.on('data', emitter.queue.bind(emitter))
   this.pipe(parser)
+  return combiner(this, emitter)
 }
 util.inherits(Client, stream.PassThrough)
 

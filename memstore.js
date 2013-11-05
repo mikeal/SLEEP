@@ -1,6 +1,7 @@
 var _ = require('lodash')
   , util = require('util')
   , events = require('events')
+  , through = require('through')
   ;
 
 function MemoryStore () {
@@ -18,8 +19,16 @@ MemoryStore.prototype.put = function (key, value) {
   this.dict[key] = value
   this.emit('change', this.sequences[key])
 }
-MemoryStore.prototype.getSequences = function (opts, cb) {
-  cb(null, this.changes(opts))
+MemoryStore.prototype.getSequences = function (opts) {
+  var self = this
+  var seqStream = through()
+  setImmediate(function() {
+    self.changes(opts).map(function(ch) {
+      seqStream.queue(ch)
+    })
+    seqStream.queue(null)
+  })
+  return seqStream
 }
 MemoryStore.prototype.changes = function (opts) {
   var self = this
@@ -51,11 +60,11 @@ MemoryStore.prototype.getContinuousSequences = function (opts) {
   }
 
   setImmediate(function () {
-    self.changes(opts).forEach(function (c) { if (emitted < opts.limit) ee.emit('entry', c)})
+    self.changes(opts).forEach(function (c) { if (emitted < opts.limit) ee.emit('data', c)})
     self.on('change', onChange)
   })
 
-  ee.on('entry', function () {emitted += 1})
+  ee.on('data', function () {emitted += 1})
 
   ee.close = function ( ) { self.removeListener('change', onChange) }
   return ee
