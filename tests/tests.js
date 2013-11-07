@@ -112,6 +112,45 @@ test('opts.style = object', function(t) {
   })
 })
 
+test('client parsing', function(t) {
+  var sl = getStore()
+  insertDummyData(sl)
+
+  var httpServer = http.createServer(sl.httpHandler.bind(sl))
+  var pending = 3
+  
+  httpServer.listen(8888, function () {
+    testNewline()
+    testArray()
+    testObject()
+  })
+  
+  function testNewline() {
+    var httpClient = sleep.client('http://127.0.0.1:8888', {style: 'newline'})
+    var expected = [ { seq: 2, id: 'test2' }, { seq: 3, id: 'test1' } ]
+    testClient(t, httpClient, expected, done)
+  }
+  
+  function testArray() {
+    var httpClient = sleep.client('http://127.0.0.1:8888', {style: 'array'})
+    var expected = [ { seq: 2, id: 'test2' }, { seq: 3, id: 'test1' } ]
+    testClient(t, httpClient, expected, done)
+  }
+  
+  function testObject() {
+    var httpClient = sleep.client('http://127.0.0.1:8888', {style: 'object'})
+    var expected = [ { seq: 2, id: 'test2' }, { seq: 3, id: 'test1' } ]
+    testClient(t, httpClient, expected, done)
+  }
+  
+  function done() {
+    pending--
+    if (pending > 0) return
+    httpServer.close()
+    t.end()
+  }
+})
+
 function insertDummyData(sl) {
   sl.store.put('test1', 1)
   sl.store.put('test2', 2)
@@ -129,8 +168,8 @@ function getStore() {
 function testClient (t, client, expected, cb) {
   client.pipe(concat(getChanges))
   function getChanges(changes) {
-    t.equal(changes.length, 2)
-    t.equal(JSON.stringify(changes), JSON.stringify(expected))
+    t.equal(changes.length, 2, '2 items')
+    t.equal(JSON.stringify(changes), JSON.stringify(expected), 'results match')
     cb()
   }
 }

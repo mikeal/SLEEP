@@ -3,8 +3,11 @@ var net = require('net')
   , https = require('https')
   , jsonstream = require('JSONStream')
   , url = require('url')
+  , split = require('binary-split')
   , util = require('util')
   , qs = require('querystring')
+  , combiner = require('stream-combiner')
+  , through = require('through')
   , _ = require('lodash')
   , headers = {'content-type':'application/json'}
   ;
@@ -23,7 +26,10 @@ function jsonParser (opts) {
   opts.style = opts.style || 'array'
   var parser
   if (opts.style === 'newline') {
-    parser = jsonstream.parse()
+    parser = combiner(split(), through(parse))
+    function parse(buff) {
+      this.queue(JSON.parse(buff))
+    }
   } else if (opts.style === 'array') {
     parser = jsonstream.parse([true])
   } else if (opts.style === 'object') {
