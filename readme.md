@@ -1,5 +1,6 @@
-## SLEEP
+## SLEEP 
 
+[![Build Status](https://travis-ci.org/mikeal/SLEEP.png?branch=master)](https://travis-ci.org/mikeal/SLEEP) [![Build Status](https://david-dm.org/mikeal/SLEEP.png)](https://david-dm.org/mikeal/SLEEP) [![NPM version](https://badge.fury.io/js/sleep-ref.png)](http://badge.fury.io/js/sleep-ref)
 [![NPM](https://nodei.co/npm/sleep-ref.png)](https://nodei.co/npm/sleep-ref/)
 
 SLEEP is a protocol envisioned by @maxogden for open data publication and synchronization. It stands for Syncasble Lightweight Event Emitting Persistence, but is mostly just a pun on REST.
