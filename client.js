@@ -4,16 +4,12 @@ var net = require('net')
   , jsonstream = require('JSONStream')
   , url = require('url')
   , util = require('util')
-  , stream = require('stream')
   , qs = require('querystring')
   , _ = require('lodash')
-  , combiner = require('stream-combiner')
-  , through = require('through')
   , headers = {'content-type':'application/json'}
   ;
 
-function Client (opts) {
-  stream.PassThrough.call(this)
+function jsonParser (opts) {
   opts.style = opts.style || 'array'
   var parser
   if (opts.style === 'newline') {
@@ -25,12 +21,8 @@ function Client (opts) {
   } else {
     throw new Error('Unknown feed style.')
   }
-  var emitter = through(function noop(d){ })
-  parser.on('data', emitter.queue.bind(emitter))
-  this.pipe(parser)
-  return combiner(this, emitter)
+  return parser
 }
-util.inherits(Client, stream.PassThrough)
 
 function httpopts (opts, u) {
   opts.path = u.path + '?' + qs.stringify(opts)
@@ -43,7 +35,7 @@ function httpopts (opts, u) {
 
 function httpConnect (opts, u) {
   var r = http.request(httpopts(opts, u))
-    , c = new Client(opts)
+    , c = jsonParser(opts)
     ;
   r.on('response', function (resp) {
     if (!resp.statusCode === 200) return c.emit('error', new Error('StatusCode is not 200'))
@@ -59,7 +51,7 @@ function httpsConnect (opts, u) {
   var opts = _.clone(opts.tls || {})
   delete opts.tls
   var r = https.request(httpopts(opts, u))
-    , c = new Client(opts)
+    , c = jsonParser(opts)
     ;
   r.on('response', function (resp) {
     if (!resp.statusCode === 200) return c.emit('error', new Error('StatusCode is not 200'))
@@ -72,13 +64,13 @@ function httpsConnect (opts, u) {
 function netConnect (opts, u) {
   var socket = net.connect(u.port, u.hostname)
   socket.write(JSON.stringify(opts)+'\r\n')
-  return socket.pipe(new Client(opts))
+  return socket.pipe(jsonParser(opts))
 }
 
 function tslConnect (opts, u) {
   var socket = net.connect(u.port, u.hostname, opts.tls || {})
   socket.write(JSON.stringify(opts)+'\r\n')
-  return socket.pipe(new Client(opts))
+  return socket.pipe(jsonParser(opts))
 }
 
 module.exports = function (_url, opts) {

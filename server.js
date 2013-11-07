@@ -3,7 +3,8 @@ var qs = require('querystring')
   , once = require('once')
   , util = require('util')
   , concat = require('concat-stream')
-  , stream = require('stream')
+  , split = require('binary-split')
+  , through = require('through')
   , _ = require('lodash')
   ;
 
@@ -25,77 +26,71 @@ function fromArray (arr, start) {
 }
 
 function SLEEPStream (opts) {
-  stream.Readable.call(this)
-
   opts.limit = opts.limit || Infinity
   opts.style = opts.style || 'array'
   this.opts = opts
   this.i = 0
+  var stream = through(this.change.bind(this), this.end.bind(this))
+  this.queue = stream.queue
+  this.emit = stream.emit
+  return stream
 }
-util.inherits(SLEEPStream, stream.Readable)
+
 SLEEPStream.prototype.change = function (change) {
   this.started = true
   if (this.i > this.opts.limit) return this.end()
 
   if (this.opts.style === 'newline') {
-    this.push(JSON.stringify(change) + (this.opts.sep || '\r\n'))
+    this.queue(JSON.stringify(change) + (this.opts.sep || '\r\n'))
   } else if (this.opts.style === 'array') {
 
-    if (this.i === 0) this.push('[')
-    else this.push(',')
+    if (this.i === 0) this.queue('[')
+    else this.queue(',')
 
-    this.push(JSON.stringify(change))
+    this.queue(JSON.stringify(change))
   } else if (this.opts.style === 'object') {
 
-    if (this.i === 0) this.push('{"rows":[')
-    else this.push(',')
+    if (this.i === 0) this.queue('{"rows":[')
+    else this.queue(',')
     
-    this.push(JSON.stringify(change))
+    this.queue(JSON.stringify(change))
   } else {
     this.emit('error', new Error('unknown feed style.'))
   }
 
   this.i += 1
 }
-SLEEPStream.prototype._read = function () {}
 SLEEPStream.prototype.end = function () {
   if (this.ended) return
   if (this.opts.style === 'newline') {
     var sep = this.opts.sep 
-    if (this.started) this.push(sep || '\r\n' + (sep ? sep : ''))
+    if (this.started) this.queue(sep || '\r\n' + (sep ? sep : ''))
   } else if (this.opts.style === 'array') {
-    if (this.started) this.push(']')
-    else this.push('[]')
+    if (this.started) this.queue(']')
+    else this.queue('[]')
   } else if (this.opts.style === 'object') {
-    if (this.started) this.push(']}')
-    else this.push('{"rows":[]}')
+    if (this.started) this.queue(']}')
+    else this.queue('{"rows":[]}')
   } else {
     this.emit('error', new Error('unknown feed style.'))
   }
 
-  this.emit('end')
+  this.queue(null)
   this.ended = true
 }
 
 function readData (stream, cb) {
-  var buf = ''
-    , finished
-    , cb = once(cb)
-    ;
-  stream.on('data', function (c) {buf += c; check()})
-  stream.on('error', cb)
-  function check () {
+  cb = once(cb)
+  var finished = false
+  stream.pipe(split()).pipe(through(write))
+  function write(buf) {
     if (finished) return
-    if (buf.indexOf('\r\n') !== -1) {
-      buf = buf.slice(0, buf.indexOf('\r\n'))
-      var ret
-      try {
-        ret = JSON.parse(buf)
-      } catch(e) {
-        cb(e)
-      }
-      if (ret) cb(null, ret)
+    var ret
+    try { ret = JSON.parse(buf) }
+    catch(e) { cb(e) }
+    if (ret) {
       finished = true
+      cb(null, ret)
     }
   }
 }
@@ -131,12 +126,8 @@ SLEEP.prototype.netHandler = function (socket) {
 }
 SLEEP.prototype.handler = function (opts, stream) {
   var self = this
-  var sleepstream = new SLEEPStream(_.extend({}, this.options, opts))
-  sleepstream.pipe(stream)
-  var seqStream = self.getSequences(opts)
-  seqStream.on('data', sleepstream.change.bind(sleepstream))
-  seqStream.on('error', stream.close ? stream.close.bind(stream) : stream.end.bind(stream))
-  seqStream.on('end', sleepstream.end.bind(sleepstream))
+  var sl = new SLEEPStream(_.extend({}, this.options, opts))
+  self.getSequences(opts).pipe(sl).pipe(stream)
 }
 
 exports.SLEEP = SLEEP
