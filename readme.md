@@ -42,3 +42,8 @@ changes.on('end', function () { console.log('up to date') })
 ```
 
 `sleep.client(url[, opts])` takes all valid SLEEP options. The url responds to the following protocols: `http:`, `https:`, `tcp:`, and `tls:`. You can pass tls options to `opts` via the `tls` property.
+
+### Tests
+
+    % make test
+
