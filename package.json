@@ -15,9 +15,8 @@
     "stream-combiner": "0.0.2"
   },
   "devDependencies": {
-    "cleanup": "~0.3.0",
-    "okdone": "~0.3.0",
-    "concat-stream": "~1.1.0"
+    "concat-stream": "~1.1.0",
+    "tape": "~2.1.0"
   },
   "scripts": {
     "test": "node tests/tests.js"
