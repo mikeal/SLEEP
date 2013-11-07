@@ -5,7 +5,7 @@ var qs = require('querystring')
   , concat = require('concat-stream')
   , split = require('binary-split')
   , through = require('through')
-  , _ = require('lodash')
+  , extend = require('extend')
   ;
 
 function fromObject (obj, start) {
@@ -126,7 +126,7 @@ SLEEP.prototype.netHandler = function (socket) {
 }
 SLEEP.prototype.handler = function (opts, stream) {
   var self = this
-  var sl = new SLEEPStream(_.extend({}, this.options, opts))
+  var sl = new SLEEPStream(extend({}, this.options, opts))
   self.getSequences(opts).pipe(sl).pipe(stream)
 }
 

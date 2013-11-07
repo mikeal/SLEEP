@@ -8,7 +8,7 @@ var net = require('net')
   , qs = require('querystring')
   , combiner = require('stream-combiner')
   , through = require('through')
-  , _ = require('lodash')
+  , clone = require('lodash.clone')
   , headers = {'content-type':'application/json'}
   ;
 
@@ -65,7 +65,7 @@ function httpConnect (opts, u) {
 }
  
 function httpsConnect (opts, u) {
-  var opts = _.clone(opts.tls || {})
+  var opts = clone(opts.tls || {})
   delete opts.tls
   var r = https.request(httpopts(opts, u))
     , c = jsonParser(opts)
