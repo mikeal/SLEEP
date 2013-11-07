@@ -4,14 +4,12 @@ var sleep = require('../')
   , jsonstream = require("JSONStream")
   , test = require('tape')
   , concat = require('concat-stream')
+  , request = require('request')
   ;
 
 test('http client', function(t) {
   var sl = getStore()
-
-  sl.store.put('test1', 1)
-  sl.store.put('test2', 2)
-  sl.store.put('test1', 3)
+  insertDummyData(sl)
 
   var expected = [ { seq: 2, id: 'test2' }, { seq: 3, id: 'test1' } ]
   var httpServer = http.createServer(sl.httpHandler.bind(sl))
@@ -27,10 +25,7 @@ test('http client', function(t) {
 
 test('tcp client', function(t) {
   var sl = getStore()
-  
-  sl.store.put('test1', 1)
-  sl.store.put('test2', 2)
-  sl.store.put('test1', 3)
+  insertDummyData(sl)
   
   var expected = [ { seq: 2, id: 'test2' }, { seq: 3, id: 'test1' } ]
   var netServer = net.createServer(sl.netHandler.bind(sl))
@@ -46,10 +41,7 @@ test('tcp client', function(t) {
 
 test('raw socket JSON parsing', function(t) {
   var sl = getStore()
-  
-  sl.store.put('test1', 1)
-  sl.store.put('test2', 2)
-  sl.store.put('test1', 3)
+  insertDummyData(sl)
   
   var expected = [ { seq: 2, id: 'test2' }, { seq: 3, id: 'test1' } ]
   var netServer = net.createServer(sl.netHandler.bind(sl))
@@ -71,6 +63,60 @@ test('raw socket JSON parsing', function(t) {
     }))
   })
 })
+
+test('opts.style = newline', function(t) {
+  var sl = getStore()
+  insertDummyData(sl)
+
+  var expected = new Buffer('{"seq":2,"id":"test2"}\r\n{"seq":3,"id":"test1"}\r\n')
+  var httpServer = http.createServer(sl.httpHandler.bind(sl))
+  
+  httpServer.listen(8888, function () {
+    var req = request('http://localhost:8888?style=newline', function(err, resp, buff) {
+      t.equal(buff.toString(), expected.toString())
+      httpServer.close()
+      t.end()
+    })
+  })
+})
+
+test('opts.style = array', function(t) {
+  var sl = getStore()
+  insertDummyData(sl)
+
+  var expected = [{"seq":2,"id":"test2"},{"seq":3,"id":"test1"}]
+  var httpServer = http.createServer(sl.httpHandler.bind(sl))
+  
+  httpServer.listen(8888, function () {
+    var req = request('http://localhost:8888?style=array', function(err, resp, buff) {
+      t.equal(JSON.stringify(JSON.parse(buff)), JSON.stringify(expected))
+      httpServer.close()
+      t.end()
+    })
+  })
+})
+
+test('opts.style = object', function(t) {
+  var sl = getStore()
+  insertDummyData(sl)
+
+  var expected = {"rows": [{"seq":2,"id":"test2"},{"seq":3,"id":"test1"}]}
+  var httpServer = http.createServer(sl.httpHandler.bind(sl))
+  
+  httpServer.listen(8888, function () {
+    var req = request('http://localhost:8888?style=object', function(err, resp, buff) {
+      t.equal(JSON.stringify(JSON.parse(buff)), JSON.stringify(expected))
+      httpServer.close()
+      t.end()
+    })
+  })
+})
+
+function insertDummyData(sl) {
+  sl.store.put('test1', 1)
+  sl.store.put('test2', 2)
+  sl.store.put('test1', 3)
+}
 
 function getStore() {
   var store = sleep.memstore()

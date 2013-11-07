@@ -9,6 +9,16 @@ var net = require('net')
   , headers = {'content-type':'application/json'}
   ;
 
+module.exports = function (_url, opts) {
+  var u = url.parse(_url)
+    , opts = opts || {}
+    ;
+  if (u.protocol === 'tcp:') return netConnect(opts, u)
+  if (u.protocol === 'tls:') return tlsConnect(opts, u)
+  if (u.protocol === 'http:') return httpConnect(opts, u)
+  if (u.protocol === 'https:') return httpsConnect(opts, u)
+}
+
 function jsonParser (opts) {
   opts.style = opts.style || 'array'
   var parser
@@ -47,6 +57,7 @@ function httpConnect (opts, u) {
   r.end()
   return c
 }
+ 
 function httpsConnect (opts, u) {
   var opts = _.clone(opts.tls || {})
   delete opts.tls
@@ -67,18 +78,8 @@ function netConnect (opts, u) {
   return socket.pipe(jsonParser(opts))
 }
 
-function tslConnect (opts, u) {
+function tlsConnect (opts, u) {
   var socket = net.connect(u.port, u.hostname, opts.tls || {})
   socket.write(JSON.stringify(opts)+'\r\n')
   return socket.pipe(jsonParser(opts))
-}
-
-module.exports = function (_url, opts) {
-  var u = url.parse(_url)
-    , opts = opts || {}
-    ;
-  if (u.protocol === 'tcp:') return netConnect(opts, u)
-  if (u.protocol === 'tls:') return tlsConnect(opts, u)
-  if (u.protocol === 'http:') return httpConnect(opts, u)
-  if (u.protocol === 'https:') return httpsConnect(opts, u)
 }

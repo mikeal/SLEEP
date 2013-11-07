@@ -41,7 +41,8 @@ SLEEPStream.prototype.change = function (change) {
   if (this.i > this.opts.limit) return this.end()
 
   if (this.opts.style === 'newline') {
-    this.queue(JSON.stringify(change) + (this.opts.sep || '\r\n'))
+    var ndrow = JSON.stringify(change) + (this.opts.sep || '\r\n')
+    this.queue(ndrow)
   } else if (this.opts.style === 'array') {
 
     if (this.i === 0) this.queue('[')
@@ -63,8 +64,7 @@ SLEEPStream.prototype.change = function (change) {
 SLEEPStream.prototype.end = function () {
   if (this.ended) return
   if (this.opts.style === 'newline') {
-    var sep = this.opts.sep 
-    if (this.started) this.queue(sep || '\r\n' + (sep ? sep : ''))
+    // do nothing
   } else if (this.opts.style === 'array') {
     if (this.started) this.queue(']')
     else this.queue('[]')
