@@ -3,7 +3,7 @@ clean:
 	@$(RM) -fr npm-debug.log
 
 test: node_modules
-	@node tests/run
+	@node tests/tests.js
 
 node_modules: package.json
 	@npm prune
