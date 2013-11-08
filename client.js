@@ -8,7 +8,7 @@ var net = require('net')
   , qs = require('querystring')
   , combiner = require('stream-combiner')
   , through = require('through')
-  , clone = require('lodash.clone')
+  , clone = require('lodash')
   , headers = {'content-type':'application/json'}
   ;
 
