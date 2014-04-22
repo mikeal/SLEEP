@@ -55,15 +55,18 @@ SLEEPStream.prototype.change = function (change) {
     else this.queue(',')
     
     this.queue(JSON.stringify(change))
+  } else if (this.opts.style === 'sse') {
+    this.queue('event: data\ndata: ' + JSON.stringify(change) + '\n\n')
   } else {
     this.emit('error', new Error('unknown feed style.'))
   }
 
   this.i += 1
 }
+
 SLEEPStream.prototype.end = function () {
   if (this.ended) return
-  if (this.opts.style === 'newline') {
+  if (this.opts.style === 'newline' || this.opts.style === 'sse') {
     // do nothing
   } else if (this.opts.style === 'array') {
     if (this.started) this.queue(']')
@@ -99,6 +102,7 @@ function SLEEP (getSequences, options) {
   this.getSequences = getSequences
   this.options = options || {}
 }
+
 SLEEP.prototype.httpHandler = function (req, resp) {
   var self = this
   if (req.method === 'GET') {
@@ -113,10 +117,12 @@ SLEEP.prototype.httpHandler = function (req, resp) {
 
   function _httpHandler (opts) {
     resp.statusCode = 200
-    resp.setHeader('content-type', 'application/json')
+    if (opts.style === 'sse') resp.setHeader('content-type', 'text/event-stream')
+    else resp.setHeader('content-type', 'application/json')
     self.handler(opts, resp)
   }
 }
+
 SLEEP.prototype.netHandler = function (socket) {
   var self = this
   readData(socket, function (e, opts) {
@@ -124,6 +130,7 @@ SLEEP.prototype.netHandler = function (socket) {
     self.handler(opts, socket)
   })
 }
+
 SLEEP.prototype.handler = function (opts, stream) {
   var self = this
   var sl = new SLEEPStream(extend({}, this.options, opts))

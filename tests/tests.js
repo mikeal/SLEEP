@@ -112,6 +112,22 @@ test('opts.style = object', function(t) {
   })
 })
 
+test('opts.style = sse', function(t) {
+  var sl = getStore()
+  insertDummyData(sl)
+
+  var expected = 'event: data\ndata: {"seq":2,"id":"test2"}\n\nevent: data\ndata: {"seq":3,"id":"test1"}\n\n'
+  var httpServer = http.createServer(sl.httpHandler.bind(sl))
+  
+  httpServer.listen(8888, function () {
+    var req = request('http://localhost:8888?style=sse', function(err, resp, buff) {
+      t.equal(buff.toString(), expected)
+      httpServer.close()
+      t.end()
+    })
+  })
+})
+
 test('client parsing', function(t) {
   var sl = getStore()
   insertDummyData(sl)
