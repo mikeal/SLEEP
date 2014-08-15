@@ -9,6 +9,7 @@ var net = require('net')
   , combiner = require('stream-combiner')
   , through = require('through')
   , clone = require('lodash')
+  , pump = require('pump')
   , headers = {'content-type':'application/json'}
   ;
 
@@ -55,7 +56,7 @@ function httpConnect (opts, u) {
     ;
   r.on('response', function (resp) {
     if (!resp.statusCode === 200) return c.emit('error', new Error('StatusCode is not 200'))
-    resp.pipe(c)
+    pump(resp, c)
   })
   r.on('error', function(e) {
     return c.emit('error', e)
@@ -72,7 +73,7 @@ function httpsConnect (opts, u) {
     ;
   r.on('response', function (resp) {
     if (!resp.statusCode === 200) return c.emit('error', new Error('StatusCode is not 200'))
-    resp.pipe(c)
+    pump(resp, c)
   })
   r.end()
   return c
@@ -81,11 +82,11 @@ function httpsConnect (opts, u) {
 function netConnect (opts, u) {
   var socket = net.connect(u.port, u.hostname)
   socket.write(JSON.stringify(opts)+'\r\n')
-  return socket.pipe(jsonParser(opts))
+  return pump(socket, jsonParser(opts))
 }
 
 function tlsConnect (opts, u) {
   var socket = net.connect(u.port, u.hostname, opts.tls || {})
   socket.write(JSON.stringify(opts)+'\r\n')
-  return socket.pipe(jsonParser(opts))
+  return pump(socket, jsonParser(opts))
 }
