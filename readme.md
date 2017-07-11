@@ -1,5 +1,7 @@
 ## SLEEP 
 
+[![Greenkeeper badge](https://badges.greenkeeper.io/mikeal/SLEEP.svg)](https://greenkeeper.io/)
+
 [![Build Status](https://travis-ci.org/mikeal/SLEEP.png?branch=master)](https://travis-ci.org/mikeal/SLEEP) [![Build Status](https://david-dm.org/mikeal/SLEEP.png)](https://david-dm.org/mikeal/SLEEP) [![NPM version](https://badge.fury.io/js/sleep-ref.png)](http://badge.fury.io/js/sleep-ref)
 [![NPM](https://nodei.co/npm/sleep-ref.png)](https://nodei.co/npm/sleep-ref/)
 
